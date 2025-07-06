@@ -1,0 +1,22 @@
+.container {
+    margin-top: 150px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    height: 300px;
+    gap: 20px;
+}
+
+.card {
+    max-width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    text-align: center;
+    gap: 10px;
+}
