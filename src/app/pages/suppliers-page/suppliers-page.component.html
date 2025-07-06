@@ -1,13 +1,138 @@
-<div class="container">
-    @for (item of data; track $index) {
-    <div class="card">
-        <p>Company Name: {{ item.companyName }}</p>
-        <p>Description: {{ item.description }}</p>
-        <p>Contact: {{ item.contact }}</p>
-        <p>Price: {{ item.price }}</p>
-    </div>
-    }
-</div>
-<div>
-    
+<div class="suppliers-container">
+  <div class="content-wrapper">
+    <header class="header">
+      <h1 class="title">Supplier Selection</h1>
+      <p class="subtitle">Choose the best supplier for your needs</p>
+    </header>
+
+    <main class="main-content">
+      <div class="suppliers-card">
+        <!-- Status Section -->
+        <div class="status-section">
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">{{ selectedSupplier ? 'Supplier Selected' : 'No Selection' }}</span>
+          </div>
+          <div class="supplier-count">
+            <span class="count-text">{{ data.length }} Suppliers Available</span>
+          </div>
+        </div>
+
+        <!-- Suppliers Grid -->
+        <div class="suppliers-grid">
+          @for (item of data; track $index) {
+          <div class="supplier-card" 
+               [class]="getRatingClass(item.overallRating)"
+               [class.selected]="selectedSupplier?.companyName === item.companyName"
+               [class.best-supplier]="isBestSupplier(item)"
+               (click)="selectSupplier(item)">
+            <div class="supplier-header">
+              <h3 class="supplier-name">{{ item.companyName }}</h3>
+              <div class="rating-badge" [class]="getRatingClass(item.overallRating)">
+                {{ item.overallRating }}/5
+              </div>
+            </div>
+            
+            <div class="supplier-content">
+              <p class="supplier-description">{{ item.description || 'No description available' }}</p>
+              <div class="supplier-details">
+                <div class="detail-item">
+                  <span class="detail-label">Contact:</span>
+                  <span class="detail-value">{{ item.contact }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Price:</span>
+                  <span class="detail-value price">{{ item.price }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Delivery:</span>
+                  <span class="detail-value">{{ item.deliveryTime }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="supplier-hint" *ngIf="item.overallRating > 3">
+              <p>🤖 Agent Recommendation: High quality supplier</p>
+            </div>
+            
+            <div class="best-supplier-badge" *ngIf="isBestSupplier(item)">
+              <span>🏆 Best Choice</span>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Selection Summary -->
+        <div class="selection-summary" *ngIf="selectedSupplier">
+          <div class="summary-header">
+            <h3>✅ Selected Supplier</h3>
+          </div>
+          <div class="summary-content">
+            <div class="selected-supplier-info">
+              <h4>{{ selectedSupplier.companyName }}</h4>
+              <p class="selected-rating">Rating: {{ selectedSupplier.overallRating }}/5</p>
+              <p class="selected-price">Price: {{ selectedSupplier.price }}</p>
+            </div>
+            <button class="approve-button" 
+                    (click)="approveSupplier()"
+                    [disabled]="isApproved">
+              <div class="button-content">
+                <div class="icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                </div>
+                <span class="button-text">
+                  {{ isApproved ? 'Approved & Saved' : 'Approve & Let Agent Call' }}
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Placeholder when no supplier is selected -->
+        <div class="selection-placeholder" *ngIf="!selectedSupplier">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <h3>Choose Your Supplier</h3>
+            <p>Select one of the suppliers above and approve it to proceed with your order!</p>
+            <div class="placeholder-steps">
+              <div class="step">
+                <span class="step-number">1</span>
+                <span class="step-text">Click on a supplier card</span>
+              </div>
+              <div class="step">
+                <span class="step-number">2</span>
+                <span class="step-text">Review the supplier details</span>
+              </div>
+              <div class="step">
+                <span class="step-number">3</span>
+                <span class="step-text">Click "Approve & Let Agent Call"</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LLM Recommendation -->
+        <div class="llm-recommendation">
+          <div class="recommendation-header">
+            <h3>🤖 Agent Recommendation</h3>
+          </div>
+          <div class="recommendation-content">
+            <div class="best-supplier">
+              <p><strong>Best Choice:</strong> {{ getBestSupplier()?.companyName }}</p>
+              <p><strong>Rating:</strong> {{ getBestSupplier()?.overallRating }}/5</p>
+            </div>
+            <div class="recommendation-reason">
+              <p>{{ getLLMOpinion() }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 </div>
