@@ -17,39 +17,45 @@ export class WebSocketService {
   constructor() {}
 
   connect(url: string): Observable<WebSocketMessage> {
-    this.socket = new WebSocket(url);
+    // Only create new connection if not already connected
+    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+      console.log('Creating new WebSocket connection...');
+      this.socket = new WebSocket(url);
 
-    this.socket.onopen = () => {
-      console.log('WebSocket connection established');
-    };
+      this.socket.onopen = () => {
+        console.log('WebSocket connection established');
+      };
 
-    this.socket.onmessage = (event) => {
-      try {
-        const parsedData = JSON.parse(event.data);
-        const message: WebSocketMessage = {
-          type: parsedData.type || 'status',
-          data: parsedData.data || parsedData,
-          timestamp: Date.now()
-        };
-        this.messageSubject.next(message);
-      } catch (error) {
-        const message: WebSocketMessage = {
-          type: 'status',
-          data: event.data,
-          timestamp: Date.now()
-        };
-        this.messageSubject.next(message);
-      }
-    };
+      this.socket.onmessage = (event) => {
+        try {
+          const parsedData = JSON.parse(event.data);
+          const message: WebSocketMessage = {
+            type: parsedData.type || 'status',
+            data: parsedData.data || parsedData,
+            timestamp: Date.now()
+          };
+          this.messageSubject.next(message);
+        } catch (error) {
+          const message: WebSocketMessage = {
+            type: 'status',
+            data: event.data,
+            timestamp: Date.now()
+          };
+          this.messageSubject.next(message);
+        }
+      };
 
-    this.socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      this.messageSubject.error(error);
-    };
+      this.socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        this.messageSubject.error(error);
+      };
 
-    this.socket.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
+      this.socket.onclose = () => {
+        console.log('WebSocket connection closed');
+      };
+    } else {
+      console.log('WebSocket already connected, reusing existing connection');
+    }
 
     return this.messageSubject.asObservable();
   }

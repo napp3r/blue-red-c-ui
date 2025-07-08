@@ -3,20 +3,57 @@
     <header class="header">
       <h1 class="title">Supplier Selection</h1>
       <p class="subtitle">Choose the best supplier for your needs</p>
+      
+      <!-- Demo Controls - Hidden -->
+      <div class="demo-controls" *ngIf="false">
+        <button class="demo-button" (click)="startDemo()">
+          🎬 Load Demo Data
+        </button>
+      </div>
+      
+      <div class="demo-controls" *ngIf="false">
+        <button class="demo-button reset" (click)="resetDemo()">
+          🔄 Reset Demo
+        </button>
+        <span class="demo-indicator">🎬 Demo Mode Active</span>
+      </div>
     </header>
 
     <main class="main-content">
       <div class="suppliers-card">
-        <!-- Status Section -->
-        <div class="status-section">
-          <div class="status-indicator">
-            <div class="status-dot"></div>
-            <span class="status-text">{{ selectedSupplier ? 'Supplier Selected' : 'No Selection' }}</span>
-          </div>
-          <div class="supplier-count">
-            <span class="count-text">{{ data.length }} Suppliers Available</span>
-          </div>
+        <!-- Loading State -->
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Loading suppliers...</p>
         </div>
+
+        <!-- Error State -->
+        <div class="error-state" *ngIf="error && !isLoading">
+          <div class="error-icon">⚠️</div>
+          <h3 class="error-title">Failed to Load Suppliers</h3>
+          <p class="error-message">{{ error }}</p>
+          <button class="retry-button" (click)="loadSuppliers()">
+            <span class="retry-icon">🔄</span>
+            <span class="retry-text">Try Again</span>
+          </button>
+        </div>
+
+        <!-- Content when data is loaded -->
+        <div class="suppliers-content" *ngIf="!isLoading && !error">
+          <!-- Status Section -->
+          <div class="status-section">
+            <div class="status-indicator" [class]="'status-' + (approvalStatus === 'waiting' ? 'waiting' : 'default')">
+              <div class="status-dot"></div>
+              <span class="status-text">
+                <span *ngIf="!selectedSupplier">No Selection</span>
+                <span *ngIf="selectedSupplier && approvalStatus === 'pending'">Supplier Selected</span>
+                <span *ngIf="selectedSupplier && approvalStatus === 'waiting'">Supplier Approved</span>
+              </span>
+            </div>
+            <div class="supplier-count">
+              <span class="count-text">{{ data.length }} Suppliers Available</span>
+            </div>
+          </div>
 
         <!-- Suppliers Grid -->
         <div class="suppliers-grid">
@@ -24,6 +61,7 @@
           <div class="supplier-card" 
                [class]="getRatingClass(item.overallRating)"
                [class.selected]="selectedSupplier?.companyName === item.companyName"
+               [class.approved]="isApproved && selectedSupplier?.companyName === item.companyName"
                [class.best-supplier]="isBestSupplier(item)"
                (click)="selectSupplier(item)">
             <div class="supplier-header">
@@ -38,7 +76,7 @@
               <div class="supplier-details">
                 <div class="detail-item">
                   <span class="detail-label">Contact:</span>
-                  <span class="detail-value">{{ item.contact }}</span>
+                  <span class="detail-value">{{ item.phone_numbers }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Price:</span>
@@ -51,7 +89,7 @@
               </div>
             </div>
 
-            <div class="supplier-hint" *ngIf="item.overallRating > 3">
+            <div class="supplier-hint" *ngIf="item.overallRating > 4.5">
               <p>🤖 Agent Recommendation: High quality supplier</p>
             </div>
             
@@ -65,13 +103,17 @@
         <!-- Selection Summary -->
         <div class="selection-summary" *ngIf="selectedSupplier">
           <div class="summary-header">
-            <h3>✅ Selected Supplier</h3>
+            <h3 *ngIf="approvalStatus === 'pending'">✅ Selected Supplier</h3>
+            <h3 *ngIf="approvalStatus === 'waiting'" class="waiting-status">⏳ Waiting for Agent to Call</h3>
           </div>
           <div class="summary-content">
             <div class="selected-supplier-info">
               <h4>{{ selectedSupplier.companyName }}</h4>
               <p class="selected-rating">Rating: {{ selectedSupplier.overallRating }}/5</p>
               <p class="selected-price">Price: {{ selectedSupplier.price }}</p>
+              <p *ngIf="approvalStatus === 'waiting'" class="waiting-message">
+                Your supplier has been approved and our agent will call them shortly.
+              </p>
             </div>
             <button class="approve-button" 
                     (click)="approveSupplier()"
@@ -83,7 +125,7 @@
                   </svg>
                 </div>
                 <span class="button-text">
-                  {{ isApproved ? 'Approved & Saved' : 'Approve & Let Agent Call' }}
+                  {{ approvalStatus === 'waiting' ? 'Agent Will Call Soon' : 'Approve & Let Agent Call' }}
                 </span>
               </div>
             </button>
@@ -131,6 +173,7 @@
               <p>{{ getLLMOpinion() }}</p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </main>

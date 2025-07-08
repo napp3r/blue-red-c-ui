@@ -3,6 +3,7 @@ import { SupplierInfomarion } from './models/supplier-information.model';
 import { OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupplierService } from '../../services/supplier.service';
+import { WebSocketSessionService } from '../home/home.page';
 
 @Component({
   selector: 'app-suppliers-page',
@@ -15,54 +16,37 @@ export class SuppliersPageComponent implements OnInit {
    data: SupplierInfomarion[] = []
    selectedSupplier: SupplierInfomarion | null = null;
    isApproved: boolean = false;
+   isLoading: boolean = true;
+   error: string | null = null;
+   isDemoMode: boolean = true;
+   approvalStatus: string = 'pending'; // 'pending', 'approved', 'waiting'
    
-   constructor(private supplierService: SupplierService) {}
+   constructor(private supplierService: SupplierService, private webSocketSessionService: WebSocketSessionService) {}
    
    ngOnInit(): void {
     console.log('SuppliersPageComponent initialized');
-    this.data = [
-      {
-        companyName: 'Supplier A',
-        description: 'High quality materials',
-        contact: '+755 123 4567',
-        price: '$1000',
-        deliveryTime: '2 weeks',
-        stock: true,
-        overallRating: 3.5,
-        flags: {
-          red: ['Late delivery', 'Quality issues'],
-          green: ['On-time delivery', 'High quality']
-        }
+    // Auto-load demo data instead of real API call
+    this.startDemo();
+   }
+
+   loadSuppliers(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.supplierService.getSuppliers().subscribe({
+      next: (suppliers) => {
+        console.log('Suppliers loaded from API:', suppliers);
+        this.data = suppliers;
+        this.isLoading = false;
       },
-      {
-        companyName: 'Supplier B',
-        contact: '+755 123 4567',
-        price: '$1000',
-        deliveryTime: '2 weeks',
-        stock: true,
-        overallRating: 4.5,
-        flags: {
-          red: ['Late delivery', 'Quality issues'],
-          green: ['On-time delivery', 'High quality']
-        }
-      },
-      {
-        companyName: 'Supplier C',
-        description: 'Low price and high quality',
-        contact: '+755 123 4567',
-        price: '$1000',
-        deliveryTime: '2 weeks',
-        stock: true,
-        overallRating: 2.5,
-        flags: {
-          red: ['Late delivery', 'Quality issues'],
-          green: ['On-time delivery', 'High quality']
-        }
+      error: (error) => {
+        console.error('Error loading suppliers:', error);
+        this.error = 'Failed to load suppliers. Please try again later.';
+        this.isLoading = false;
+        // Fallback to empty array to prevent app crash
+        this.data = [];
       }
-    ];
-    console.log('Data loaded:', this.data);
-    console.log('Data length:', this.data.length);
-    console.log('First supplier:', this.data[0]);
+    });
    }
    
    selectSupplier(supplier: SupplierInfomarion): void {
@@ -73,7 +57,10 @@ export class SuppliersPageComponent implements OnInit {
    approveSupplier(): void {
      if (this.selectedSupplier) {
        this.isApproved = true;
+       this.approvalStatus = 'waiting';
        this.saveSupplierToMongoDB(this.selectedSupplier);
+       // Disconnect WebSocket after approval
+       this.webSocketSessionService.setShouldDisconnect(true);
      }
    }
    
@@ -128,5 +115,73 @@ export class SuppliersPageComponent implements OnInit {
    isBestSupplier(supplier: SupplierInfomarion): boolean {
      const bestSupplier = this.getBestSupplier();
      return bestSupplier?.companyName === supplier.companyName;
+   }
+
+   // Demo methods
+   startDemo(): void {
+     this.isDemoMode = true;
+     this.isLoading = true;
+     
+     // Simulate loading delay
+     setTimeout(() => {
+       this.loadDemoSuppliers();
+       this.isLoading = false;
+     }, 1500);
+   }
+
+   private loadDemoSuppliers(): void {
+     this.data = [
+       {
+         companyName: "OfficeFurniture Pro",
+         description: "Premium office furniture specialist with 15+ years experience. Specializes in high-quality chairs and office equipment.",
+         phone_numbers: ["+33 1 42 86 17 23"],
+         emails: ["marie.dubois@officefurniturepro.fr"],
+         price: "€2,450",
+         deliveryTime: "July 14-16, 2025",
+         stock: true,
+         overallRating: 4.7,
+         flags: {
+           red: [],
+           green: ["Premium Quality", "Fast Delivery", "Excellent Service"]
+         }
+       },
+       {
+         companyName: "Carrousel Furniture Solutions",
+         description: "Specializes in Louvre area deliveries with competitive pricing. Perfect for Carrousel du Louvre location.",
+         phone_numbers: ["+33 1 45 23 67 89"],
+         emails: ["jl.moreau@carrouselfurniture.fr"],
+         price: "€2,200",
+         deliveryTime: "July 13-15, 2025",
+         stock: true,
+         overallRating: 4.3,
+         flags: {
+           red: [],
+           green: ["Louvre Area Specialist", "Competitive Pricing", "Local Delivery"]
+         }
+       },
+       {
+         companyName: "Paris Office Supply Co.",
+         description: "Large inventory with bulk order discounts available. Reliable supplier for office furniture needs.",
+         phone_numbers: ["+33 1 48 76 54 32"],
+         emails: ["sophie.laurent@parisoffice.fr"],
+         price: "€2,100",
+         deliveryTime: "July 16-18, 2025",
+         stock: true,
+         overallRating: 4.0,
+         flags: {
+           red: ["Longer Delivery Time"],
+           green: ["Bulk Discounts", "Large Inventory"]
+         }
+       }
+     ];
+   }
+
+   resetDemo(): void {
+     this.isDemoMode = true;
+     this.data = [];
+     this.selectedSupplier = null;
+     this.isApproved = false;
+     this.isLoading = false;
+     this.error = null;
    }
 }
