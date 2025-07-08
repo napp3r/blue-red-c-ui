@@ -1,7 +1,9 @@
 export interface SupplierInfomarion {
     companyName: string;
     description?: string;
-    contact: string;
+    phone_numbers: string[];
+    emails?: string[];
+    call_status?: string;
     price: string;
     deliveryTime: string;
     stock: boolean;

@@ -35,6 +35,52 @@
   font-weight: 300;
 }
 
+/* Demo Controls */
+.demo-controls {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
+}
+
+.demo-button {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.demo-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.demo-button.reset {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.demo-button.reset:hover {
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.demo-indicator {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 2px solid rgba(139, 92, 246, 0.2);
+}
+
 /* Main content */
 .main-content {
   display: flex;
@@ -233,6 +279,157 @@
   background: rgba(59, 130, 246, 0.1);
   color: #2563eb;
   border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Compact Session Status */
+.session-status-compact {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s ease;
+  transform: translateY(10px);
+}
+
+.session-status-compact.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Make status more prominent after recording stops */
+.session-status-compact.after-recording {
+  transform: scale(1.05);
+  margin-top: 30px;
+  animation: slideInFromBottom 0.6s ease-out;
+}
+
+.session-status-compact.after-recording .status-indicator {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+}
+
+/* Suppliers Button */
+.suppliers-button-container {
+  animation: slideDown 0.4s ease-out;
+}
+
+.suppliers-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  border-radius: 25px;
+  padding: 12px 24px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.suppliers-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.suppliers-button:active {
+  transform: translateY(0);
+}
+
+.button-icon {
+  font-size: 1rem;
+}
+
+.button-text {
+  white-space: nowrap;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.status-indicator.status-pending,
+.status-indicator.status-in-progress {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.status-indicator.status-completed {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.status-indicator.status-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.status-indicator .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9ca3af;
+  transition: background-color 0.3s ease;
+}
+
+.status-indicator.status-pending .status-dot,
+.status-indicator.status-in-progress .status-dot {
+  background: #f59e0b;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.status-completed .status-dot {
+  background: #10b981;
+}
+
+.status-indicator.status-error .status-dot {
+  background: #ef4444;
+  animation: pulse 1s infinite;
 }
 
 /* Responsive design */

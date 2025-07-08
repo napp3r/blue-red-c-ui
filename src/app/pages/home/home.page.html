@@ -3,6 +3,20 @@
     <header class="header">
       <h1 class="title">Blue Red C</h1>
       <p class="subtitle">Start recording your request</p>
+      
+      <!-- Demo Controls - Hidden -->
+      <div class="demo-controls" *ngIf="false">
+        <button class="demo-button" (click)="startDemo()">
+          🎬 Start Demo
+        </button>
+      </div>
+      
+      <div class="demo-controls" *ngIf="false">
+        <button class="demo-button reset" (click)="resetDemo()">
+          🔄 Reset Demo
+        </button>
+        <span class="demo-indicator">🎬 Demo Mode Active</span>
+      </div>
     </header>
 
     <main class="main-content">
@@ -39,7 +53,7 @@
             class="record-button"
             [class.recording]="isRecording"
             (click)="toggleRecording()"
-            [disabled]="!isConnected">
+            [disabled]="(!isDemoMode && (sessionStatus.status === 'pending' || sessionStatus.status === 'in progress'))">
             <div class="button-content">
               <div class="icon">
                 <svg *ngIf="!isRecording" viewBox="0 0 24 24" fill="currentColor">
@@ -90,11 +104,20 @@
         </div>
 
         <div class="instructions">
-          <p *ngIf="!isConnected" class="warning">
-            ⚠️ Not connected to server. Please ensure the server is running on localhost:8000
+          <p *ngIf="sessionStatus.status === 'pending' && !isDemoMode" class="info">
+            ⏳ Initializing session, please wait...
           </p>
-          <p *ngIf="isConnected && !isRecording" class="info">
+          <p *ngIf="sessionStatus.status === 'pending' && isDemoMode && !isRecording" class="info">
+            🎤 Ready to record! Click the button above to start
+          </p>
+          <p *ngIf="sessionStatus.status === 'in progress'" class="info">
+            🔄 Session is processing, please wait...
+          </p>
+          <p *ngIf="sessionStatus.status === 'completed' && !isRecording" class="info">
             🎤 Click the button above to start recording your voice
+          </p>
+          <p *ngIf="sessionStatus.status === 'error' && !isRecording" class="info">
+            🎤 No suppliers found. Click the button above to try recording again
           </p>
           <p *ngIf="isRecording" class="info">
             🔴 Recording in progress... Click to stop
@@ -102,6 +125,24 @@
           <p *ngIf="!isTranscriptionSupported()" class="warning">
             ⚠️ Speech recognition is not supported in this browser
           </p>
+        </div>
+
+        <!-- Compact Session Status -->
+        <div class="session-status-compact" 
+             [class.show]="!isRecording && recordingTime > 0"
+             [class.after-recording]="!isRecording && recordingTime > 0">
+          <!-- Suppliers Button - appears when session is completed -->
+          <div class="suppliers-button-container" *ngIf="sessionStatus.status === 'completed'">
+            <button class="suppliers-button" routerLink="/suppliers">
+              <span class="button-icon">📋</span>
+              <span class="button-text">View Suppliers</span>
+            </button>
+          </div>
+          
+          <div class="status-indicator" [class]="'status-' + (sessionStatus.status === 'in progress' ? 'in-progress' : sessionStatus.status)">
+            <div class="status-dot"></div>
+            <span class="status-text">{{ sessionStatus.status | titlecase }}</span>
+          </div>
         </div>
       </div>
     </main>
